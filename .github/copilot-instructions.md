@@ -46,8 +46,7 @@ from the list of paths. If user does not have a TypeSpec project, then prompt us
     - Always use `Azure` as the repo owner in MCP tool calls.
     - Confirm with the user if they want to change the repo owner or target branch, and prompt for new values if needed.
 
-7. **Validation and SDK Generation**:
-    - Skip validation if a pull request exists and there are no uncommitted changes.
+7. **SDK Generation**:
     - Ensure all steps are followed before moving to SDK generation.
 
 8. **Exclusions**:
