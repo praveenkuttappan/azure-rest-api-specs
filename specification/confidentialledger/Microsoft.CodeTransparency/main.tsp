@@ -234,6 +234,10 @@ model ReceiptEntry {
   @header("Content-Type")
   contentType: "application/cose";
 
+  @doc("Title of the content")
+  @header("Content-Title")
+  contentTitle?: string;
+
   @doc("Location of the receipt")
   @header("Location")
   location?: string;
