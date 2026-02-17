@@ -27,10 +27,10 @@ steps:
   #     tenant-id: "72f988bf-86f1-41af-91ab-2d7cd011db47"
   #     allow-no-subscriptions: true
 
-  - name: Install azsdk mcp server
+  - name: Install azsdk CLI
     shell: pwsh
     run: |
-      ./eng/common/mcp/azure-sdk-mcp.ps1 -InstallDirectory $HOME/bin -Run
+      ./eng/common/mcp/azure-sdk-mcp.ps1 -InstallDirectory $HOME/bin
 permissions:
   contents: read
   actions: read
@@ -40,13 +40,6 @@ permissions:
 tools:
   github:
     toolsets: [default, actions]
-mcp-servers:
-  azuresdk:
-    command: "/home/runner/bin/azsdk"
-    args: ["mcp"]
-    env:
-      GITHUB_TOKEN: "GITHUB_PERSONAL_ACCESS_TOKEN"
-    allowed: ["*"]
 safe-outputs:
   add-comment:
     max: 20
@@ -90,24 +83,32 @@ When validation succeeds, execute the following steps in order.
    - Prefer an open pull request that appears to be an API spec/TypeSpec PR.
   - If such a PR is found, set source branch to exactly `refs/pull/<PR number>`.
   - If no such PR is found, use default branch context.
-4. Trigger SDK generation by calling `azsdk_run_generate_sdk`.
-  - Pass the release plan work item ID from step 3.
-  - Use the source branch computed above when applicable.
-  - Request generation for all supported languages defined for the project/release plan.
-5. Immediately add a comment with:
+4. Use the azsdk CLI that was installed earlier to gather release plan metadata and required arguments:
+  - Execute `$HOME/bin/azsdk release-plan get --work-item-id <WORK_ITEM_ID> --release-plan-id <RELEASE_PLAN_ID>` (Windows runners can run `./azsdk.exe ...` from `C:\git`).
+  - Capture the TypeSpec project path, API version, release type, and target languages from the response. Missing data is a blocking error and must be reported back to the issue.
+  - Record any associated API spec pull request numbers for later use.
+5. Trigger SDK generation by calling `$HOME/bin/azsdk spec-workflow generate-sdk` (or `./azsdk.exe` on Windows) with the following options:
+  - `--typespec-project <PATH>` (required)
+  - `--api-version <VERSION>` (required)
+  - `--release-type <beta|stable>` (required)
+  - `--language <LANGUAGE>` (required, run once per language returned in step 4; languages: Python, .NET, JavaScript, Java, go)
+  - `--pr <PR number>` when a spec PR was detected in step 3
+  - `--workitem-id <WORK_ITEM_ID>` to tie the generation back to the release plan work item
+  - Capture the pipeline/run URL emitted by the CLI for status tracking.
+6. Immediately add a comment with:
    - Pipeline run link/status URL, or
    - Failure details if triggering the pipeline failed.
 
 ## Monitoring and Status Updates
 
-1. After successful trigger, monitor the pipeline run.
-2. Poll status every 5 minutes using `azsdk_get_pipeline_status`.
+1. After successful trigger, monitor the pipeline run referenced in the CLI output.
+2. Poll status every 5 minutes by querying the pipeline's status endpoint or, when available, `azsdk` status commands using the recorded run identifier.
 3. On each poll, determine whether pipeline is still running, failed, or completed.
 4. If still running, update status via comment (keep concise).
 5. If failed, add a comment indicating failure and include pipeline link and failure summary.
 6. If completed:
-  - Fetch SDK pull request links per language using `azsdk_get_sdk_pull_request_link`.
-   - Add a comment that includes one line per language using this exact format:
+  - Refresh release plan data via `azsdk release-plan get --work-item-id <WORK_ITEM_ID> --release-plan-id <RELEASE_PLAN_ID>` and inspect the SDK pull request references per language.
+  - Add a comment that includes one line per language using this exact format:
      - `sdk pr for  <language>`: `<Link to sdk pull request>`
 
 ## Output Requirements
