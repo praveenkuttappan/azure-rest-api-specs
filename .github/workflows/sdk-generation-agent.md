@@ -42,11 +42,11 @@ tools:
     toolsets: [default, actions]
 mcp-servers:
   azuresdk:
-    type: local
-    command: /home/runner/bin/azsdk
+    command: "/home/runner/bin/azsdk"
     args: ["mcp"]
     env:
       GITHUB_TOKEN: "GITHUB_PERSONAL_ACCESS_TOKEN"
+    allowed: ["*"]
 safe-outputs:
   add-comment:
     max: 20

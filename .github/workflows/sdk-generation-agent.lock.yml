@@ -23,7 +23,7 @@
 #
 # Trigger SDK generation from issues and comments, monitor pipeline status, and report SDK PR links.
 #
-# frontmatter-hash: c1ab881fa69ac28a9f9e6bddf56582ca712d1d8853235cf9b4d83706d4ec9c62
+# frontmatter-hash: 5338d1c057dd25791c29d5721a1006e7381160553c21a61f170d2cadd0b487f8
 
 name: "SDK Generation Agent"
 "on":
@@ -425,17 +425,7 @@ jobs:
           mkdir -p /home/runner/.copilot
           cat << GH_AW_MCP_CONFIG_EOF | bash /opt/gh-aw/actions/start_mcp_gateway.sh
           {
-            "mcpServers": {              
-              "github": {
-                "type": "stdio",
-                "container": "ghcr.io/github/github-mcp-server:v0.30.3",
-                "env": {
-                  "GITHUB_LOCKDOWN_MODE": "$GITHUB_MCP_LOCKDOWN",
-                  "GITHUB_PERSONAL_ACCESS_TOKEN": "\${GITHUB_MCP_SERVER_TOKEN}",
-                  "GITHUB_READ_ONLY": "1",
-                  "GITHUB_TOOLSETS": "context,repos,issues,pull_requests,actions"
-                }
-              },
+            "mcpServers": {
               "azuresdk": {
                 "type": "stdio",
                 "command": "/home/runner/bin/azsdk",
@@ -447,6 +437,16 @@ jobs:
                 ],
                 "env": {
                   "GITHUB_TOKEN": "GITHUB_PERSONAL_ACCESS_TOKEN"
+                }
+              },
+              "github": {
+                "type": "stdio",
+                "container": "ghcr.io/github/github-mcp-server:v0.30.3",
+                "env": {
+                  "GITHUB_LOCKDOWN_MODE": "$GITHUB_MCP_LOCKDOWN",
+                  "GITHUB_PERSONAL_ACCESS_TOKEN": "\${GITHUB_MCP_SERVER_TOKEN}",
+                  "GITHUB_READ_ONLY": "1",
+                  "GITHUB_TOOLSETS": "context,repos,issues,pull_requests,actions"
                 }
               },
               "safeoutputs": {
