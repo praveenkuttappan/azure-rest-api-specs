@@ -15,7 +15,7 @@ if: >
    github.event.action == 'created' &&
    github.event.issue.pull_request == null &&
    contains(github.event.issue.labels.*.name, 'Run sdk generation') &&
-   github.event.comment.body == 'Regenerate SDK')
+    contains(github.event.comment.body, 'Regenerate'))
 steps:
   - name: Checkout code
     uses: actions/checkout@v6
@@ -40,6 +40,13 @@ permissions:
 tools:
   github:
     toolsets: [default, actions]
+mcp-servers:
+  azuresdk:
+    type: local
+    command: /home/runner/bin/azsdk
+    args: ["mcp"]
+    env:
+      GITHUB_TOKEN: "GITHUB_PERSONAL_ACCESS_TOKEN"
 safe-outputs:
   add-comment:
     max: 20
@@ -68,7 +75,7 @@ You are an AI agent that handles SDK generation requests from GitHub issues and 
      - Continue only when:
        - The comment is on an issue (not a pull request comment),
        - The issue has label `Run sdk generation`, and
-       - The new comment body is exactly `Regenerate SDK`.
+      - The new comment body contains the word `Regenerate` (case-sensitive match).
 2. If validation fails, call `noop` with a short message explaining why no action was taken.
 
 ## Workflow Behavior

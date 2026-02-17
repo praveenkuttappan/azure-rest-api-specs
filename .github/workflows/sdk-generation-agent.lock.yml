@@ -23,7 +23,7 @@
 #
 # Trigger SDK generation from issues and comments, monitor pipeline status, and report SDK PR links.
 #
-# frontmatter-hash: 9c8efb292175c90382a46089581be2c4988226b09aecf7455612d63951a21629
+# frontmatter-hash: c1ab881fa69ac28a9f9e6bddf56582ca712d1d8853235cf9b4d83706d4ec9c62
 
 name: "SDK Generation Agent"
 "on":
@@ -53,7 +53,7 @@ jobs:
       github.event.action == 'created' &&
       github.event.issue.pull_request == null &&
       contains(github.event.issue.labels.*.name, 'Run sdk generation') &&
-      github.event.comment.body == 'Regenerate SDK'))
+      contains(github.event.comment.body, 'Regenerate')))
     runs-on: ubuntu-slim
     permissions:
       contents: read
@@ -425,7 +425,7 @@ jobs:
           mkdir -p /home/runner/.copilot
           cat << GH_AW_MCP_CONFIG_EOF | bash /opt/gh-aw/actions/start_mcp_gateway.sh
           {
-            "mcpServers": {
+            "mcpServers": {              
               "github": {
                 "type": "stdio",
                 "container": "ghcr.io/github/github-mcp-server:v0.30.3",
@@ -434,6 +434,19 @@ jobs:
                   "GITHUB_PERSONAL_ACCESS_TOKEN": "\${GITHUB_MCP_SERVER_TOKEN}",
                   "GITHUB_READ_ONLY": "1",
                   "GITHUB_TOOLSETS": "context,repos,issues,pull_requests,actions"
+                }
+              },
+              "azuresdk": {
+                "type": "stdio",
+                "command": "/home/runner/bin/azsdk",
+                "args": [
+                  "mcp"
+                ],
+                "tools": [
+                  "*"
+                ],
+                "env": {
+                  "GITHUB_TOKEN": "GITHUB_PERSONAL_ACCESS_TOKEN"
                 }
               },
               "safeoutputs": {
@@ -958,7 +971,7 @@ jobs:
       github.event.action == 'created' &&
       github.event.issue.pull_request == null &&
       contains(github.event.issue.labels.*.name, 'Run sdk generation') &&
-      github.event.comment.body == 'Regenerate SDK')
+      contains(github.event.comment.body, 'Regenerate'))
     runs-on: ubuntu-slim
     outputs:
       activated: ${{ steps.check_membership.outputs.is_team_member == 'true' }}
