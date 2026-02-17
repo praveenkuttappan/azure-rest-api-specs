@@ -83,11 +83,11 @@ When validation succeeds, execute the following steps in order.
    - Prefer an open pull request that appears to be an API spec/TypeSpec PR.
   - If such a PR is found, set source branch to exactly `refs/pull/<PR number>`.
   - If no such PR is found, use default branch context.
-4. Use the azsdk CLI that was installed earlier to gather release plan metadata and required arguments:
-  - Execute `$HOME/bin/azsdk release-plan get --work-item-id <WORK_ITEM_ID> --release-plan-id <RELEASE_PLAN_ID>` (Windows runners can run `./azsdk.exe ...` from `C:\git`).
+4. Use the azsdk CLI at `/home/runner/bin/azsdk` (installed earlier) to gather release plan metadata and required arguments:
+  - Execute `/home/runner/bin/azsdk release-plan get --work-item-id <WORK_ITEM_ID> --release-plan-id <RELEASE_PLAN_ID>` (Windows runners can run `./azsdk.exe ...` from `C:\git`).
   - Capture the TypeSpec project path, API version, release type, and target languages from the response. Missing data is a blocking error and must be reported back to the issue.
   - Record any associated API spec pull request numbers for later use.
-5. Trigger SDK generation by calling `$HOME/bin/azsdk spec-workflow generate-sdk` (or `./azsdk.exe` on Windows) with the following options:
+5. Trigger SDK generation by calling `/home/runner/bin/azsdk spec-workflow generate-sdk` (or `./azsdk.exe` on Windows) with the following options:
   - `--typespec-project <PATH>` (required)
   - `--api-version <VERSION>` (required)
   - `--release-type <beta|stable>` (required)
