@@ -23,7 +23,7 @@
 #
 # Trigger SDK generation from issues and comments, monitor pipeline status, and report SDK PR links.
 #
-# frontmatter-hash: 87b033a4e6e8c9f982a391f9216a213c482fd1682d5436a4bd7f28436aea1286
+# frontmatter-hash: 9c8efb292175c90382a46089581be2c4988226b09aecf7455612d63951a21629
 
 name: "SDK Generation Agent"
 "on":
@@ -111,12 +111,6 @@ jobs:
         run: bash /opt/gh-aw/actions/create_gh_aw_tmp_dir.sh
       - name: Checkout code
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-      - name: Azure Login with Workload Identity Federation
-        uses: azure/login@1384c340ab2dda50fed2bee3041d1d87018aa5e8 # v2
-        with:
-          allow-no-subscriptions: true
-          client-id: c277c2aa-5326-4d16-90de-98feeca69cbc
-          tenant-id: 72f988bf-86f1-41af-91ab-2d7cd011db47
       - name: Install azsdk mcp server
         run: |
           ./eng/common/mcp/azure-sdk-mcp.ps1 -InstallDirectory $HOME/bin -Run
@@ -582,6 +576,8 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
+          GH_AW_GITHUB_REPOSITORY: ${{ github.repository }}
+          GH_AW_GITHUB_RUN_ID: ${{ github.run_id }}
         with:
           script: |
             const { setupGlobals } = require('/opt/gh-aw/actions/setup_globals.cjs');
@@ -828,6 +824,7 @@ jobs:
           GH_AW_WORKFLOW_ID: "sdk-generation-agent"
           GH_AW_SECRET_VERIFICATION_RESULT: ${{ needs.agent.outputs.secret_verification_result }}
           GH_AW_CHECKOUT_PR_SUCCESS: ${{ needs.agent.outputs.checkout_pr_success }}
+          GH_AW_SAFE_OUTPUT_MESSAGES: "{\"runStarted\":\"[{workflow_name}]({run_url}) started. Debug link to this workflow run.\"}"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
@@ -997,6 +994,7 @@ jobs:
     timeout-minutes: 15
     env:
       GH_AW_ENGINE_ID: "copilot"
+      GH_AW_SAFE_OUTPUT_MESSAGES: "{\"runStarted\":\"[{workflow_name}]({run_url}) started. Debug link to this workflow run.\"}"
       GH_AW_WORKFLOW_ID: "sdk-generation-agent"
       GH_AW_WORKFLOW_NAME: "SDK Generation Agent"
     outputs:

@@ -20,12 +20,12 @@ steps:
   - name: Checkout code
     uses: actions/checkout@v6
 
-  - name: Azure Login with Workload Identity Federation
-    uses: azure/login@v2
-    with:
-      client-id: "c277c2aa-5326-4d16-90de-98feeca69cbc"
-      tenant-id: "72f988bf-86f1-41af-91ab-2d7cd011db47"
-      allow-no-subscriptions: true
+  # - name: Azure Login with Workload Identity Federation
+  #   uses: azure/login@v2
+  #   with:
+  #     client-id: "c277c2aa-5326-4d16-90de-98feeca69cbc"
+  #     tenant-id: "72f988bf-86f1-41af-91ab-2d7cd011db47"
+  #     allow-no-subscriptions: true
 
   - name: Install azsdk mcp server
     shell: pwsh
@@ -44,6 +44,8 @@ safe-outputs:
   add-comment:
     max: 20
     hide-older-comments: true
+  messages:
+    run-started: "[{workflow_name}]({run_url}) started. Debug link to this workflow run."
   noop:
 ---
 
@@ -73,29 +75,26 @@ You are an AI agent that handles SDK generation requests from GitHub issues and 
 
 When validation succeeds, execute the following steps in order.
 
-1. Identify the target issue number and collect issue context.
-2. Find whether there is an open TypeSpec API spec pull request associated with this request.
+1. Immediately add a debug comment on the target issue with the workflow run link:
+  - `https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}`
+2. Identify the target issue number and collect issue context.
+3. Find whether there is an open TypeSpec API spec pull request associated with this request.
    - Check linked or referenced pull requests from the issue and comments.
    - Prefer an open pull request that appears to be an API spec/TypeSpec PR.
-3. Get the release plan for the TypeSpec project using the TypeSpec API spec PR context.
-  - If an API spec PR is found with number `N`, call the release-plan MCP tool using that PR.
-  - Use `azsdk_get_release_plan_for_spec_pr` when available (or `azxsdk_get_release_plan` as fallback with release plan number as parameter).
-  - Extract and store the release plan work item ID from the tool result.
-4. Determine the source branch parameter for SDK generation:
-  - If an open TypeSpec API spec PR is found with number `N`, set source branch to `refs/pull/N`.
-  - Otherwise, use the default source branch expected by the SDK generation MCP tool.
-5. Trigger SDK generation by calling `azsdk_run_generate_sdk`.
+  - If such a PR is found, set source branch to exactly `refs/pull/<PR number>`.
+  - If no such PR is found, use default branch context.
+4. Trigger SDK generation by calling `azsdk_run_generate_sdk`.
   - Pass the release plan work item ID from step 3.
   - Use the source branch computed above when applicable.
   - Request generation for all supported languages defined for the project/release plan.
-6. Immediately add a comment with:
+5. Immediately add a comment with:
    - Pipeline run link/status URL, or
    - Failure details if triggering the pipeline failed.
 
 ## Monitoring and Status Updates
 
 1. After successful trigger, monitor the pipeline run.
-2. Poll status every 10 minutes using `azsdk_get_pipeline_status`.
+2. Poll status every 5 minutes using `azsdk_get_pipeline_status`.
 3. On each poll, determine whether pipeline is still running, failed, or completed.
 4. If still running, update status via comment (keep concise).
 5. If failed, add a comment indicating failure and include pipeline link and failure summary.
