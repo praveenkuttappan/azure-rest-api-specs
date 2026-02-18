@@ -23,7 +23,7 @@
 #
 # Trigger SDK generation from issues and comments, monitor pipeline status, and report SDK PR links.
 #
-# frontmatter-hash: 7a74336a182cceb96e3eab09de653167f2f7128516f2efbd5b7b1e3dfcc96241
+# frontmatter-hash: 8c20d1835c838b7cbfa6c6134102714618b7d593e17aad671ea0921619c51303
 
 name: "SDK Generation Agent"
 "on":
@@ -112,8 +112,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - name: Install azsdk mcp server
-        run: |
-          ${GITHUB_WORKSPACE}/eng/common/mcp/azure-sdk-mcp.ps1 -InstallDirectory /tmp/bin
+        run: "\"${GITHUB_WORKSPACE}/eng/common/mcp/azure-sdk-mcp.ps1\" -InstallDirectory /tmp/bin\n"
         shell: pwsh
 
       - name: Configure Git credentials

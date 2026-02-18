@@ -23,7 +23,7 @@ steps:
   - name: Install azsdk mcp server
     shell: pwsh
     run: |
-      ${GITHUB_WORKSPACE}/eng/common/mcp/azure-sdk-mcp.ps1 -InstallDirectory /tmp/bin
+      "${GITHUB_WORKSPACE}/eng/common/mcp/azure-sdk-mcp.ps1" -InstallDirectory /tmp/bin
 
   # - name: Azure Login with Workload Identity Federation
   #   uses: azure/login@v2
