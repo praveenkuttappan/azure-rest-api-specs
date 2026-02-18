@@ -38,6 +38,8 @@ permissions:
   issues: read
   pull-requests: read
   id-token: write
+env:
+  GITHUB_TOKEN: ${{ secrets.GITHUB_PERSONAL_ACCESS_TOKEN || secrets.GITHUB_TOKEN }}
 tools:
   github:
     toolsets: [default, actions]

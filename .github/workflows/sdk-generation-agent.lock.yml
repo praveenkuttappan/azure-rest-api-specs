@@ -23,7 +23,7 @@
 #
 # Trigger SDK generation from issues and comments, monitor pipeline status, and report SDK PR links.
 #
-# frontmatter-hash: 1360e40683b7bebcd1743dcac5327704dbb9d199140df8dd70356da681cb042c
+# frontmatter-hash: d7b4f9e52df789f0571c19226ff09bca2d598450e04b5d1656828f34dd55e034
 
 name: "SDK Generation Agent"
 "on":
@@ -41,6 +41,9 @@ concurrency:
   group: "gh-aw-${{ github.workflow }}-${{ github.event.issue.number }}"
 
 run-name: "SDK Generation Agent"
+
+env:
+  GITHUB_TOKEN: ${{ secrets.GITHUB_PERSONAL_ACCESS_TOKEN || secrets.GITHUB_TOKEN }}
 
 jobs:
   activation:
