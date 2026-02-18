@@ -32,12 +32,6 @@ steps:
   #     tenant-id: "72f988bf-86f1-41af-91ab-2d7cd011db47"
   #     allow-no-subscriptions: true
 
-mcp-servers:
-  azsdkmcp:
-    command: "pwsh"
-    args: ["./eng/common/mcp/azure-sdk-mcp.ps1", "-Run"]
-    allowed: ["*"]
-
 permissions:
   contents: read
   actions: read

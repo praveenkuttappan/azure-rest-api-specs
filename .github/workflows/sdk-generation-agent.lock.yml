@@ -23,7 +23,7 @@
 #
 # Trigger SDK generation from issues and comments, monitor pipeline status, and report SDK PR links.
 #
-# frontmatter-hash: 3eb35589a3d2c12c0d005546001bacdaa01de78d8180e0f34937bd57c4ab17fa
+# frontmatter-hash: 1360e40683b7bebcd1743dcac5327704dbb9d199140df8dd70356da681cb042c
 
 name: "SDK Generation Agent"
 "on":
@@ -426,17 +426,6 @@ jobs:
           cat << GH_AW_MCP_CONFIG_EOF | bash /opt/gh-aw/actions/start_mcp_gateway.sh
           {
             "mcpServers": {
-              "azsdkmcp": {
-                "type": "stdio",
-                "command": "pwsh",
-                "args": [
-                  "./eng/common/mcp/azure-sdk-mcp.ps1",
-                  "-Run"
-                ],
-                "tools": [
-                  "*"
-                ]
-              },
               "github": {
                 "type": "stdio",
                 "container": "ghcr.io/github/github-mcp-server:v0.30.3",
