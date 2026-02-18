@@ -27,10 +27,25 @@ steps:
   #     tenant-id: "72f988bf-86f1-41af-91ab-2d7cd011db47"
   #     allow-no-subscriptions: true
 
-  - name: Install azsdk CLI
+  - name: Ensure azsdk CLI is available
     shell: pwsh
     run: |
-      ./eng/common/mcp/azure-sdk-mcp.ps1 -InstallDirectory $HOME/bin
+      $cliPath = '/home/runner/bin/azsdk'
+      if (Test-Path $cliPath) {
+        Write-Host "azsdk CLI already installed at $cliPath"
+        exit 0
+      }
+
+      Write-Host "azsdk CLI missing at $cliPath. Listing /home/runner/bin contents before install..."
+      if (Test-Path '/home/runner/bin') {
+        Get-ChildItem -Force '/home/runner/bin'
+      }
+      else {
+        Write-Host '/home/runner/bin does not exist; creating directory.'
+        New-Item -ItemType Directory -Path '/home/runner/bin' | Out-Null
+      }
+
+      ./eng/common/mcp/azure-sdk-mcp.ps1 -InstallDirectory '/home/runner/bin'
 permissions:
   contents: read
   actions: read
