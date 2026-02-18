@@ -23,7 +23,7 @@
 #
 # Trigger SDK generation from issues and comments, monitor pipeline status, and report SDK PR links.
 #
-# frontmatter-hash: a61249669751fb085fa252eb7a8a77ad21aa1bb069d7fe04577d5c6afbbca549
+# frontmatter-hash: 7a74336a182cceb96e3eab09de653167f2f7128516f2efbd5b7b1e3dfcc96241
 
 name: "SDK Generation Agent"
 "on":
@@ -111,24 +111,9 @@ jobs:
         run: bash /opt/gh-aw/actions/create_gh_aw_tmp_dir.sh
       - name: Checkout code
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-      - name: Ensure azsdk CLI is available
+      - name: Install azsdk mcp server
         run: |
-          $cliPath = '/home/runner/bin/azsdk'
-          if (Test-Path $cliPath) {
-            Write-Host "azsdk CLI already installed at $cliPath"
-            exit 0
-          }
-
-          Write-Host "azsdk CLI missing at $cliPath. Listing /home/runner/bin contents before install..."
-          if (Test-Path '/home/runner/bin') {
-            Get-ChildItem -Force '/home/runner/bin'
-          }
-          else {
-            Write-Host '/home/runner/bin does not exist; creating directory.'
-            New-Item -ItemType Directory -Path '/home/runner/bin' | Out-Null
-          }
-
-          ./eng/common/mcp/azure-sdk-mcp.ps1 -InstallDirectory '/home/runner/bin'
+          ${GITHUB_WORKSPACE}/eng/common/mcp/azure-sdk-mcp.ps1 -InstallDirectory /tmp/bin
         shell: pwsh
 
       - name: Configure Git credentials
@@ -441,6 +426,17 @@ jobs:
           cat << GH_AW_MCP_CONFIG_EOF | bash /opt/gh-aw/actions/start_mcp_gateway.sh
           {
             "mcpServers": {
+              "azsdkmcp": {
+                "type": "stdio",
+                "command": "pwsh",
+                "args": [
+                  "${GITHUB_WORKSPACE}/eng/common/mcp/azure-sdk-mcp.ps1",
+                  "-Run"
+                ],
+                "tools": [
+                  "*"
+                ]
+              },
               "github": {
                 "type": "stdio",
                 "container": "ghcr.io/github/github-mcp-server:v0.30.3",

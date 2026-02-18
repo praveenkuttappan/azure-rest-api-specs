@@ -20,6 +20,11 @@ steps:
   - name: Checkout code
     uses: actions/checkout@v6
 
+  - name: Install azsdk mcp server
+    shell: pwsh
+    run: |
+      ${GITHUB_WORKSPACE}/eng/common/mcp/azure-sdk-mcp.ps1 -InstallDirectory /tmp/bin
+
   # - name: Azure Login with Workload Identity Federation
   #   uses: azure/login@v2
   #   with:
@@ -27,25 +32,12 @@ steps:
   #     tenant-id: "72f988bf-86f1-41af-91ab-2d7cd011db47"
   #     allow-no-subscriptions: true
 
-  - name: Ensure azsdk CLI is available
-    shell: pwsh
-    run: |
-      $cliPath = '/home/runner/bin/azsdk'
-      if (Test-Path $cliPath) {
-        Write-Host "azsdk CLI already installed at $cliPath"
-        exit 0
-      }
+mcp-servers:
+  azsdkmcp:
+    command: "pwsh"
+    args: ["${GITHUB_WORKSPACE}/eng/common/mcp/azure-sdk-mcp.ps1", "-Run"]
+    allowed: ["*"]
 
-      Write-Host "azsdk CLI missing at $cliPath. Listing /home/runner/bin contents before install..."
-      if (Test-Path '/home/runner/bin') {
-        Get-ChildItem -Force '/home/runner/bin'
-      }
-      else {
-        Write-Host '/home/runner/bin does not exist; creating directory.'
-        New-Item -ItemType Directory -Path '/home/runner/bin' | Out-Null
-      }
-
-      ./eng/common/mcp/azure-sdk-mcp.ps1 -InstallDirectory '/home/runner/bin'
 permissions:
   contents: read
   actions: read
@@ -98,11 +90,11 @@ When validation succeeds, execute the following steps in order.
    - Prefer an open pull request that appears to be an API spec/TypeSpec PR.
   - If such a PR is found, set source branch to exactly `refs/pull/<PR number>`.
   - If no such PR is found, use default branch context.
-4. Use the azsdk CLI at `/home/runner/bin/azsdk` (installed earlier) to gather release plan metadata and required arguments:
-  - Execute `/home/runner/bin/azsdk release-plan get --work-item-id <WORK_ITEM_ID> --release-plan-id <RELEASE_PLAN_ID>` (Windows runners can run `./azsdk.exe ...` from `C:\git`).
+4. Use the azsdk CLI at `/tmp/bin/azsdk` (installed earlier) to gather release plan metadata and required arguments:
+  - Execute `/tmp/bin/azsdk release-plan get --work-item-id <WORK_ITEM_ID> --release-plan-id <RELEASE_PLAN_ID>` (Windows runners can run `./azsdk.exe ...` from `C:\git`).
   - Capture the TypeSpec project path, API version, release type, and target languages from the response. Missing data is a blocking error and must be reported back to the issue.
   - Record any associated API spec pull request numbers for later use.
-5. Trigger SDK generation by calling `/home/runner/bin/azsdk spec-workflow generate-sdk` (or `./azsdk.exe` on Windows) with the following options:
+5. Trigger SDK generation by calling `/tmp/bin/azsdk spec-workflow generate-sdk` (or `./azsdk.exe` on Windows) with the following options:
   - `--typespec-project <PATH>` (required)
   - `--api-version <VERSION>` (required)
   - `--release-type <beta|stable>` (required)
