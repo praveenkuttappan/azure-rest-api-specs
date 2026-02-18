@@ -25,13 +25,6 @@ steps:
     run: |
       ./eng/common/mcp/azure-sdk-mcp.ps1 -InstallDirectory /tmp/bin
 
-  - name: Azure Login with Workload Identity Federation
-    uses: azure/login@v2
-    with:
-      client-id: "c277c2aa-5326-4d16-90de-98feeca69cbc"
-      tenant-id: "72f988bf-86f1-41af-91ab-2d7cd011db47"
-      allow-no-subscriptions: true
-
 permissions:
   contents: read
   actions: read
@@ -40,6 +33,9 @@ permissions:
   id-token: write
 env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_PERSONAL_ACCESS_TOKEN || secrets.GITHUB_TOKEN }}
+  AZURE_CLIENT_ID: "c277c2aa-5326-4d16-90de-98feeca69cbc"
+  AZURE_TENANT_ID: "72f988bf-86f1-41af-91ab-2d7cd011db47"
+
 tools:
   github:
     toolsets: [default, actions]
