@@ -23,7 +23,7 @@
 #
 # Trigger SDK generation from issues and comments, monitor pipeline status, and report SDK PR links.
 #
-# frontmatter-hash: 70e5e5089a040b6c69f658ff00c6913a4fcf0e110582b3f9b9dcc23ee5850179
+# frontmatter-hash: d78611e8d2d43b45cd1d71bd0b54083feb4b94a8df3d2b023d867b3a88540c7e
 
 name: "SDK Generation Agent"
 "on":
@@ -44,6 +44,7 @@ run-name: "SDK Generation Agent"
 
 env:
   AZURE_CLIENT_ID: c277c2aa-5326-4d16-90de-98feeca69cbc
+  AZURE_FEDERATED_TOKEN_FILE: /tmp/azure-oidc-token
   AZURE_TENANT_ID: 72f988bf-86f1-41af-91ab-2d7cd011db47
   GITHUB_TOKEN: ${{ secrets.GITHUB_PERSONAL_ACCESS_TOKEN || secrets.GITHUB_TOKEN }}
 
@@ -116,6 +117,14 @@ jobs:
         run: bash /opt/gh-aw/actions/create_gh_aw_tmp_dir.sh
       - name: Checkout code
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - id: oidc
+        name: Acquire OIDC token for Azure
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        with:
+          script: |
+            const token = await core.getIDToken('api://AzureADTokenExchange');
+            const fs = require('fs');
+            fs.writeFileSync('/tmp/azure-oidc-token', token);
       - name: Install azsdk mcp server
         run: |
           ./eng/common/mcp/azure-sdk-mcp.ps1 -InstallDirectory /tmp/bin
