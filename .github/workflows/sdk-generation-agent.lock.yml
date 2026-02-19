@@ -23,7 +23,7 @@
 #
 # Trigger SDK generation from issues and comments, monitor pipeline status, and report SDK PR links.
 #
-# frontmatter-hash: da1bd9419d65ce7e97a83fc31e6a83b27945533f79744a53292f47fa7c477ca5
+# frontmatter-hash: 70e5e5089a040b6c69f658ff00c6913a4fcf0e110582b3f9b9dcc23ee5850179
 
 name: "SDK Generation Agent"
 "on":
@@ -619,8 +619,6 @@ jobs:
           GITHUB_STEP_SUMMARY: ${{ env.GITHUB_STEP_SUMMARY }}
           GITHUB_WORKSPACE: ${{ github.workspace }}
           XDG_CONFIG_HOME: /home/runner
-          AZURE_CLIENT_ID: c277c2aa-5326-4d16-90de-98feeca69cbc
-          AZURE_TENANT_ID: 72f988bf-86f1-41af-91ab-2d7cd011db47
       - name: Configure Git credentials
         env:
           REPO_NAME: ${{ github.repository }}

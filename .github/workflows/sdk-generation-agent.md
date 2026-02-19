@@ -33,8 +33,8 @@ permissions:
   id-token: write
 env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_PERSONAL_ACCESS_TOKEN || secrets.GITHUB_TOKEN }}
-  AZURE_CLIENT_ID: "c277c2aa-5326-4d16-90de-98feeca69cbc"
-  AZURE_TENANT_ID: "72f988bf-86f1-41af-91ab-2d7cd011db47"
+  AZURE_CLIENT_ID: c277c2aa-5326-4d16-90de-98feeca69cbc
+  AZURE_TENANT_ID: 72f988bf-86f1-41af-91ab-2d7cd011db47
 
 tools:
   github:
