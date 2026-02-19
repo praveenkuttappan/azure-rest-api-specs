@@ -46,7 +46,12 @@ env:
   AZURE_CLIENT_ID: c277c2aa-5326-4d16-90de-98feeca69cbc
   AZURE_TENANT_ID: 72f988bf-86f1-41af-91ab-2d7cd011db47
   AZURE_FEDERATED_TOKEN_FILE: /tmp/azure-oidc-token
-
+strict: false
+network:
+  allowed:
+    - defaults
+    - "login.microsoftonline.com"
+    - "dev.azure.com"
 tools:
   github:
     toolsets: [default, actions]
