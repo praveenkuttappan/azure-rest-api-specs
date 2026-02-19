@@ -23,7 +23,7 @@
 #
 # Trigger SDK generation from issues and comments, monitor pipeline status, and report SDK PR links.
 #
-# frontmatter-hash: b8ab49bdcff2a0a8b071cb2f766486e041ea73b5aa9f5943462a2ac5d804c1cc
+# frontmatter-hash: efacf12dd184f7b3fdf88eff93a42f77e6668cb02f7a2d6e89c32ff8ac61cbdc
 
 name: "SDK Generation Agent"
 "on":
@@ -125,6 +125,9 @@ jobs:
             const token = await core.getIDToken('api://AzureADTokenExchange');
             const fs = require('fs');
             fs.writeFileSync('/tmp/azure-oidc-token', token);
+      - name: Verify Azure CLI authentication
+        run: "set -euo pipefail\nif ! command -v az >/dev/null 2>&1; then\n  echo \"Azure CLI (az) is not installed on this runner.\" >&2\n  exit 1\nfi\n\nif [[ -z \"${AZURE_CLIENT_ID:-}\" || -z \"${AZURE_TENANT_ID:-}\" || -z \"${AZURE_FEDERATED_TOKEN_FILE:-}\" ]]; then\n  echo \"Azure federated authentication variables are missing.\" >&2\n  exit 1\nfi\n\nFED_TOKEN=$(cat \"$AZURE_FEDERATED_TOKEN_FILE\")\nif [[ -z \"$FED_TOKEN\" ]]; then\n  echo \"Federated token file $AZURE_FEDERATED_TOKEN_FILE is empty.\" >&2\n  exit 1\nfi\n\necho \"Ensuring Azure CLI session is authenticated using workload identity...\"\naz login --service-principal \\\n  --username \"$AZURE_CLIENT_ID\" \\\n  --tenant \"$AZURE_TENANT_ID\" \\\n  --federated-token \"$FED_TOKEN\" \\\n  --allow-no-subscriptions >/tmp/az-login.json\n\nif az account show --output json > /tmp/az-account.json 2>/tmp/az-account.err; then\n  echo \"Azure CLI authentication verified. Active subscription (if any):\"\n  jq -r '\"- \" + (.name // \"No subscription\") + \" (\" + (.id // \"n/a\") + \")\"' /tmp/az-account.json || cat /tmp/az-account.json\nelse\n  echo \"Unable to verify Azure CLI login status:\" >&2\n  cat /tmp/az-account.err >&2 || true\n  exit 1\nfi\n"
+        shell: bash
       - name: Install azsdk mcp server
         run: |
           ./eng/common/mcp/azure-sdk-mcp.ps1 -InstallDirectory /tmp/bin
@@ -182,7 +185,7 @@ jobs:
               actor: context.actor,
               event_name: context.eventName,
               staged: false,
-              allowed_domains: ["defaults","login.microsoftonline.com","dev.azure.com"],
+              allowed_domains: ["defaults","login.microsoftonline.com","dev.azure.com","vssps.dev.azure.com"],
               firewall_enabled: true,
               awf_version: "v0.18.0",
               awmg_version: "v0.1.4",
@@ -614,7 +617,7 @@ jobs:
         timeout-minutes: 20
         run: |
           set -o pipefail
-          sudo -E awf --env-all --container-workdir "${GITHUB_WORKSPACE}" --allow-domains api.business.githubcopilot.com,api.enterprise.githubcopilot.com,api.github.com,api.githubcopilot.com,api.individual.githubcopilot.com,api.snapcraft.io,archive.ubuntu.com,azure.archive.ubuntu.com,crl.geotrust.com,crl.globalsign.com,crl.identrust.com,crl.sectigo.com,crl.thawte.com,crl.usertrust.com,crl.verisign.com,crl3.digicert.com,crl4.digicert.com,crls.ssl.com,dev.azure.com,github.com,host.docker.internal,json-schema.org,json.schemastore.org,keyserver.ubuntu.com,login.microsoftonline.com,ocsp.digicert.com,ocsp.geotrust.com,ocsp.globalsign.com,ocsp.identrust.com,ocsp.sectigo.com,ocsp.ssl.com,ocsp.thawte.com,ocsp.usertrust.com,ocsp.verisign.com,packagecloud.io,packages.cloud.google.com,packages.microsoft.com,ppa.launchpad.net,raw.githubusercontent.com,registry.npmjs.org,s.symcb.com,s.symcd.com,security.ubuntu.com,telemetry.enterprise.githubcopilot.com,ts-crl.ws.symantec.com,ts-ocsp.ws.symantec.com --log-level info --proxy-logs-dir /tmp/gh-aw/sandbox/firewall/logs --enable-host-access --image-tag 0.18.0 --skip-pull \
+          sudo -E awf --env-all --container-workdir "${GITHUB_WORKSPACE}" --allow-domains api.business.githubcopilot.com,api.enterprise.githubcopilot.com,api.github.com,api.githubcopilot.com,api.individual.githubcopilot.com,api.snapcraft.io,archive.ubuntu.com,azure.archive.ubuntu.com,crl.geotrust.com,crl.globalsign.com,crl.identrust.com,crl.sectigo.com,crl.thawte.com,crl.usertrust.com,crl.verisign.com,crl3.digicert.com,crl4.digicert.com,crls.ssl.com,dev.azure.com,github.com,host.docker.internal,json-schema.org,json.schemastore.org,keyserver.ubuntu.com,login.microsoftonline.com,ocsp.digicert.com,ocsp.geotrust.com,ocsp.globalsign.com,ocsp.identrust.com,ocsp.sectigo.com,ocsp.ssl.com,ocsp.thawte.com,ocsp.usertrust.com,ocsp.verisign.com,packagecloud.io,packages.cloud.google.com,packages.microsoft.com,ppa.launchpad.net,raw.githubusercontent.com,registry.npmjs.org,s.symcb.com,s.symcd.com,security.ubuntu.com,telemetry.enterprise.githubcopilot.com,ts-crl.ws.symantec.com,ts-ocsp.ws.symantec.com,vssps.dev.azure.com --log-level info --proxy-logs-dir /tmp/gh-aw/sandbox/firewall/logs --enable-host-access --image-tag 0.18.0 --skip-pull \
             -- /bin/bash -c '/usr/local/bin/copilot --add-dir /tmp/gh-aw/ --log-level all --log-dir /tmp/gh-aw/sandbox/agent/logs/ --add-dir "${GITHUB_WORKSPACE}" --disable-builtin-mcps --allow-all-tools --allow-all-paths --share /tmp/gh-aw/sandbox/agent/logs/conversation.md --prompt "$(cat /tmp/gh-aw/aw-prompts/prompt.txt)"${GH_AW_MODEL_AGENT_COPILOT:+ --model "$GH_AW_MODEL_AGENT_COPILOT"}' 2>&1 | tee -a /tmp/gh-aw/agent-stdio.log
         env:
           COPILOT_AGENT_RUNNER_TYPE: STANDALONE
@@ -693,7 +696,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_SAFE_OUTPUTS: ${{ env.GH_AW_SAFE_OUTPUTS }}
-          GH_AW_ALLOWED_DOMAINS: "api.business.githubcopilot.com,api.enterprise.githubcopilot.com,api.github.com,api.githubcopilot.com,api.individual.githubcopilot.com,api.snapcraft.io,archive.ubuntu.com,azure.archive.ubuntu.com,crl.geotrust.com,crl.globalsign.com,crl.identrust.com,crl.sectigo.com,crl.thawte.com,crl.usertrust.com,crl.verisign.com,crl3.digicert.com,crl4.digicert.com,crls.ssl.com,dev.azure.com,github.com,host.docker.internal,json-schema.org,json.schemastore.org,keyserver.ubuntu.com,login.microsoftonline.com,ocsp.digicert.com,ocsp.geotrust.com,ocsp.globalsign.com,ocsp.identrust.com,ocsp.sectigo.com,ocsp.ssl.com,ocsp.thawte.com,ocsp.usertrust.com,ocsp.verisign.com,packagecloud.io,packages.cloud.google.com,packages.microsoft.com,ppa.launchpad.net,raw.githubusercontent.com,registry.npmjs.org,s.symcb.com,s.symcd.com,security.ubuntu.com,telemetry.enterprise.githubcopilot.com,ts-crl.ws.symantec.com,ts-ocsp.ws.symantec.com"
+          GH_AW_ALLOWED_DOMAINS: "api.business.githubcopilot.com,api.enterprise.githubcopilot.com,api.github.com,api.githubcopilot.com,api.individual.githubcopilot.com,api.snapcraft.io,archive.ubuntu.com,azure.archive.ubuntu.com,crl.geotrust.com,crl.globalsign.com,crl.identrust.com,crl.sectigo.com,crl.thawte.com,crl.usertrust.com,crl.verisign.com,crl3.digicert.com,crl4.digicert.com,crls.ssl.com,dev.azure.com,github.com,host.docker.internal,json-schema.org,json.schemastore.org,keyserver.ubuntu.com,login.microsoftonline.com,ocsp.digicert.com,ocsp.geotrust.com,ocsp.globalsign.com,ocsp.identrust.com,ocsp.sectigo.com,ocsp.ssl.com,ocsp.thawte.com,ocsp.usertrust.com,ocsp.verisign.com,packagecloud.io,packages.cloud.google.com,packages.microsoft.com,ppa.launchpad.net,raw.githubusercontent.com,registry.npmjs.org,s.symcb.com,s.symcd.com,security.ubuntu.com,telemetry.enterprise.githubcopilot.com,ts-crl.ws.symantec.com,ts-ocsp.ws.symantec.com,vssps.dev.azure.com"
           GITHUB_SERVER_URL: ${{ github.server_url }}
           GITHUB_API_URL: ${{ github.api_url }}
         with:
